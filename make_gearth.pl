@@ -1,6 +1,8 @@
 #!/usr/bin/perl -w
 #!/Perl/bin/Perl.exe -w
 
+# richard.ivanov@alcatel.co.za
+
 use strict;
 use warnings;
 use DBI;
@@ -38,6 +40,20 @@ my %Regions = (
 	"MPU"=>"Mpumalanga",
 	"EAS"=>"Eastern"
 	);
+	
+my %colors = (
+	"CEN"=>"ff0000ff",
+	"WES"=>"ff00ff00",
+	"LES"=>"ff000000",
+	"KZN"=>"ff00ffff",
+	"SGA"=>"ffff0000",
+	"SGS"=>"ffff00ff",
+	"SGC"=>"ffffff00",
+	"NGA"=>"ffffffff",
+	"LIM"=>"ff001122",
+	"MPU"=>"ff112233",
+	"EAS"=>"ff445566"
+);
 
 # transformation support
 my $degrees_per_radian = 180/pi;
@@ -123,21 +139,23 @@ TILLHERE
 	opendir(DIR, $IconDir) or die "can't opendir $IconDir: $!";
 	my @iconfiles = grep { /png$/ && -f "$IconDir/$_" } readdir(DIR);
 	closedir DIR;
-	
+for my $region (keys %colors) {
 	for my $icon (@iconfiles) {
 		$icon =~ s/\.png$//;
 		print OUTFILE <<TILLENDICON;
-  <Style id="n$icon">
+  <Style id="n$icon$region">
    <IconStyle>
+   <color>$colors{$region}</color>
     <Icon><href>/Program Files/VodacomSiteDB/$icon.png</href></Icon>
    </IconStyle>
    <LabelStyle>
 	<color>7dffffff</color>
    </LabelStyle>
   </Style>
-  <Style id="h$icon">
+  <Style id="h$icon$region">
    <IconStyle>
   	<scale>1.5</scale>
+  	<color>$colors{$region}</color>
     <Icon><href>/Program Files/VodacomSiteDB/$icon.png</href></Icon>
    </IconStyle>
    <LabelStyle>
@@ -147,16 +165,17 @@ TILLHERE
   <StyleMap id="$icon">
    <Pair>
     <key>normal</key>
-    <styleUrl>#n$icon</styleUrl>
+    <styleUrl>#n$icon$region</styleUrl>
    </Pair>
    <Pair>
     <key>highlight</key>
-    <styleUrl>#h$icon</styleUrl>
+    <styleUrl>#h$icon$region</styleUrl>
    </Pair>
   </StyleMap>
 TILLENDICON
 		
 	}
+}
 
 	for my $region (sort {$Regions{$a} cmp $Regions{$b} } keys %Regions) {
 
@@ -249,7 +268,7 @@ TILLHERED1
 			print OUTFILE <<TILLHERED2;
 ]]>
 	</description>
-	<styleUrl>#$pic</styleUrl>
+	<styleUrl>#$pic$region</styleUrl>
 	<Point>
 	 <coordinates>$lon,$lat,0</coordinates>
 	</Point>

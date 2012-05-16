@@ -1,6 +1,8 @@
 #!/usr/bin/perl -w
 #!/Perl/bin/Perl.exe -w
 
+# richard.ivanov@alcatel.co.za
+
 use strict;
 use DBI;
 use Math::Trig;
