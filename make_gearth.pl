@@ -32,7 +32,6 @@ my %Regions = (
 	"WES"=>"Western",
 	"LES"=>"Lesotho",
 	"KZN"=>"Kwa-Zulu Natal",
-	"SGA"=>"Southern Gauteng A",
 	"SGS"=>"Southern Gauteng S",
 	"SGC"=>"Southern Gauteng C",
 	"NGA"=>"Northern Gauteng",
@@ -40,20 +39,6 @@ my %Regions = (
 	"MPU"=>"Mpumalanga",
 	"EAS"=>"Eastern"
 	);
-	
-my %colors = (
-	"CEN"=>"ff0000ff",
-	"WES"=>"ff00ff00",
-	"LES"=>"ff000000",
-	"KZN"=>"ff00ffff",
-	"SGA"=>"ffff0000",
-	"SGS"=>"ffff00ff",
-	"SGC"=>"ffffff00",
-	"NGA"=>"ffffffff",
-	"LIM"=>"ff001122",
-	"MPU"=>"ff112233",
-	"EAS"=>"ff445566"
-);
 
 # transformation support
 my $degrees_per_radian = 180/pi;
@@ -139,23 +124,21 @@ TILLHERE
 	opendir(DIR, $IconDir) or die "can't opendir $IconDir: $!";
 	my @iconfiles = grep { /png$/ && -f "$IconDir/$_" } readdir(DIR);
 	closedir DIR;
-for my $region (keys %colors) {
+	
 	for my $icon (@iconfiles) {
 		$icon =~ s/\.png$//;
 		print OUTFILE <<TILLENDICON;
-  <Style id="n$icon$region">
+  <Style id="n$icon">
    <IconStyle>
-   <color>$colors{$region}</color>
     <Icon><href>/Program Files/VodacomSiteDB/$icon.png</href></Icon>
    </IconStyle>
    <LabelStyle>
 	<color>7dffffff</color>
    </LabelStyle>
   </Style>
-  <Style id="h$icon$region">
+  <Style id="h$icon">
    <IconStyle>
   	<scale>1.5</scale>
-  	<color>$colors{$region}</color>
     <Icon><href>/Program Files/VodacomSiteDB/$icon.png</href></Icon>
    </IconStyle>
    <LabelStyle>
@@ -165,17 +148,16 @@ for my $region (keys %colors) {
   <StyleMap id="$icon">
    <Pair>
     <key>normal</key>
-    <styleUrl>#n$icon$region</styleUrl>
+    <styleUrl>#n$icon</styleUrl>
    </Pair>
    <Pair>
     <key>highlight</key>
-    <styleUrl>#h$icon$region</styleUrl>
+    <styleUrl>#h$icon</styleUrl>
    </Pair>
   </StyleMap>
 TILLENDICON
 		
 	}
-}
 
 	for my $region (sort {$Regions{$a} cmp $Regions{$b} } keys %Regions) {
 
@@ -187,8 +169,8 @@ TILLENDICON
 		$sth3->execute;
 		my ($maxdate) = $sth3->fetchrow_array;
 		if (array_exists(\@tables,$tname)) {
-			my $regLen = length($region);
-			$sth = $dbh->prepare("select BSCNAME, SITE, LAC, CI, CELL_NAME, LAT, LON, ASIMUTH, DOWNTILT, ERP, HEIGHT FROM $tname WHERE LAT <> '' AND LON <> '' AND CI <> '' AND SUBSTRING(BSCNAME,1,$regLen) = '$region';");
+			my $regLen = length($region)+1;
+			$sth = $dbh->prepare("select BSCNAME, SITE, LAC, CI, CELL_NAME, LAT, LON, ASIMUTH, DOWNTILT, ERP, HEIGHT FROM $tname WHERE LAT <> '' AND LON <> '' AND CI <> '' AND (SUBSTRING(BSCNAME,1,$regLen) = '$region"."_"."' OR RIGHT(BSCNAME,$regLen) = '_$region');");
 			if ($sth) {
 				$sth->execute;
 				while ( my @row = $sth->fetchrow_array ) {
@@ -268,7 +250,7 @@ TILLHERED1
 			print OUTFILE <<TILLHERED2;
 ]]>
 	</description>
-	<styleUrl>#$pic$region</styleUrl>
+	<styleUrl>#$pic</styleUrl>
 	<Point>
 	 <coordinates>$lon,$lat,0</coordinates>
 	</Point>
